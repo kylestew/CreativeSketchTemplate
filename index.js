@@ -3,30 +3,30 @@ import Stats from "stats.js";
 import { settings, update, render } from "./sketch";
 
 let ctx, stats;
-let canvasScale;
+let canvasScale, canvasXOff, canvasYOff;
 
 function resetCanvas() {
   ctx.canvas.width = window.innerWidth;
   ctx.canvas.height = window.innerHeight;
+
+  // scale/translate canvas to [-1, 1] crop
+  if (ctx.canvas.width > ctx.canvas.height) {
+    // height is max side
+    canvasScale = ctx.canvas.height / 2;
+    canvasXOff = (ctx.canvas.width - ctx.canvas.height) / 2;
+    canvasYOff = 0;
+  } else {
+    canvasScale = ctx.canvas.width / 2;
+    canvasXOff = 0;
+    canvasYOff = (ctx.canvas.height - ctx.canvas.width) / 2;
+  }
 }
 
 function normalizeCanvas() {
-  // scale/translate canvas to [-1, 1] crop
-  let scale, xOff, yOff;
-  if (ctx.canvas.width > ctx.canvas.height) {
-    // height is max side
-    scale = ctx.canvas.height / 2;
-    xOff = (ctx.canvas.width - ctx.canvas.height) / 2;
-    yOff = 0;
-  } else {
-    scale = ctx.canvas.width / 2;
-    xOff = 0;
-    yOff = (ctx.canvas.height - ctx.canvas.width) / 2;
-  }
-  canvasScale = scale;
-  ctx.translate(xOff, yOff);
-  ctx.scale(scale, scale);
-  ctx.strokeWidth(4.0);
+  ctx.translate(canvasXOff, canvasYOff);
+  ctx.scale(canvasScale, canvasScale);
+  ctx.strokeWidth(8.0);
+  ctx.lineJoin = "round";
 }
 
 function init() {
@@ -39,11 +39,15 @@ function init() {
     this.lineWidth = value / canvasScale;
   };
 
-  stats = new Stats();
-  stats.showPanel(0);
-  document.body.appendChild(stats.dom);
+  if (settings.animated === true) {
+    stats = new Stats();
+    stats.showPanel(0);
+    document.body.appendChild(stats.dom);
+  }
 
   function mainLoop() {
+    if (stats) stats.begin();
+
     update();
 
     ctx.fillStyle = settings.clearColor || "white";
@@ -56,11 +60,13 @@ function init() {
     ctx.strokeStyle = "black";
 
     normalizeCanvas();
-    render(ctx);
+    render({ ctx: ctx, canvasScale: 1.0 / canvasScale });
 
     ctx.restore();
 
-    requestAnimationFrame(mainLoop);
+    if (stats) stats.end();
+
+    if (settings.animated === true) requestAnimationFrame(mainLoop);
   }
   requestAnimationFrame(mainLoop);
 }
