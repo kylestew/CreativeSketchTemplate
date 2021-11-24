@@ -1,5 +1,6 @@
 import { circle } from "@thi.ng/geom";
 import { fit } from "@thi.ng/math";
+import * as dx from "./snod/drawer";
 
 const settings = {
   animated: true,
@@ -14,14 +15,9 @@ function update(time) {
 }
 
 function render({ ctx, canvasScale }) {
-  ctx.beginPath();
-  let [x, y] = circ.pos;
-  ctx.arc(x, x, circ.r, 0, 2 * Math.PI, false);
-  // ctx.fillStyle = "white";
-  ctx.fill();
-  ctx.strokeWidth(9);
+  ctx.strokeWidth(12);
   ctx.strokeStyle = "#fff";
-  ctx.stroke();
+  dx.circle(ctx, circ.pos, circ.r, true);
 }
 
 export { settings, update, render };
