@@ -31,6 +31,14 @@ function normalizeCanvas() {
   ctx.lineJoin = "round";
 }
 
+function downloadCanvas() {
+  const link = document.createElement("a");
+  var dataURL = ctx.canvas.toDataURL("image/png");
+  link.href = dataURL;
+  link.download = "output";
+  link.click();
+}
+
 function init() {
   var canvas = document.getElementById("canvas");
   ctx = canvas.getContext("2d");
@@ -79,4 +87,10 @@ window.onload = function () {
 
 window.onresize = function () {
   resetCanvas();
+};
+
+window.onkeydown = function (evt) {
+  if (evt.key == "s") {
+    downloadCanvas();
+  }
 };
