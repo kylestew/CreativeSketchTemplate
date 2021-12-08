@@ -1,12 +1,15 @@
 import Stats from "stats.js";
 
-import { settings, update, render } from "./sketch";
+import { createApp } from "./src/state";
+import { init as initGUI } from "./src/gui";
+import { settings, update, render } from "./src/sketch";
 
-let ctx, stats;
+let app;
+let ctx;
+let stats;
 let canvasScale, canvasXOff, canvasYOff;
 
-let videoStream, mediaRecorder;
-let recordedChunks;
+let videoStream, mediaRecorder, recordedChunks;
 
 function resetCanvas() {
   ctx.canvas.width = window.innerWidth;
@@ -46,7 +49,38 @@ function downloadCanvas() {
   download(dataURL, "image");
 }
 
+function _update(time) {
+  update({
+    time,
+    state: app.getState(),
+  });
+}
+
+function _render() {
+  ctx.fillStyle = settings.clearColor || "white";
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+  ctx.save();
+
+  // defaults
+  ctx.fillStyle = "#F0F";
+  ctx.strokeStyle = "black";
+
+  normalizeCanvas();
+  render({
+    ctx: ctx,
+    canvasScale: 1.0 / canvasScale,
+    state: app.getState(),
+  });
+
+  ctx.restore();
+}
+
 function init() {
+  app = createApp();
+
+  initGUI(app);
+
   var canvas = document.getElementById("canvas");
   ctx = canvas.getContext("2d");
   resetCanvas();
@@ -77,30 +111,27 @@ function init() {
     document.body.appendChild(stats.dom);
   }
 
-  function mainLoop(time) {
+  function animationLoop(time) {
     if (stats) stats.begin();
 
-    update(time);
-
-    ctx.fillStyle = settings.clearColor || "white";
-    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-    ctx.save();
-
-    // defaults
-    ctx.fillStyle = "#F0F";
-    ctx.strokeStyle = "black";
-
-    normalizeCanvas();
-    render({ ctx: ctx, canvasScale: 1.0 / canvasScale });
-
-    ctx.restore();
+    _update(time);
+    _render();
 
     if (stats) stats.end();
 
-    if (settings.animated === true) requestAnimationFrame(mainLoop);
+    if (settings.animated === true) requestAnimationFrame(animationLoop);
   }
-  requestAnimationFrame(mainLoop);
+
+  if (settings.animated === true) {
+    requestAnimationFrame(animationLoop);
+  } else {
+    const postUpdate = () => {
+      _update();
+      _render();
+    };
+    app.subscribe(postUpdate);
+    postUpdate();
+  }
 }
 
 window.onload = function () {
