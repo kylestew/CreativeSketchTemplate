@@ -7,34 +7,12 @@ import { settings, update, render } from "./src/sketch";
 let app;
 let ctx;
 let stats;
-let canvasScale, canvasXOff, canvasYOff;
 
 let videoStream, mediaRecorder, recordedChunks;
 
 function resetCanvas() {
   ctx.canvas.width = window.innerWidth;
   ctx.canvas.height = window.innerHeight;
-
-  // scale/translate canvas to [-1, 1] crop
-  if (ctx.canvas.width > ctx.canvas.height) {
-    // height is max side
-    canvasScale = ctx.canvas.height / 2;
-    canvasXOff = (ctx.canvas.width - ctx.canvas.height) / 2;
-    canvasYOff = 0;
-  } else {
-    canvasScale = ctx.canvas.width / 2;
-    canvasXOff = 0;
-    canvasYOff = (ctx.canvas.height - ctx.canvas.width) / 2;
-  }
-}
-
-function normalizeCanvas() {
-  ctx.translate(canvasXOff, canvasYOff);
-  ctx.scale(canvasScale, canvasScale);
-  ctx.translate(1, 1);
-  ctx.scale(1, -1);
-  ctx.strokeWidth(1.0);
-  ctx.lineJoin = "round";
 }
 
 function download(dataURL, name) {
@@ -66,10 +44,10 @@ function _render() {
   ctx.fillStyle = "#F0F";
   ctx.strokeStyle = "black";
 
-  normalizeCanvas();
   render({
     ctx: ctx,
-    canvasScale: 1.0 / canvasScale,
+    width: ctx.canvas.width,
+    height: ctx.canvas.height,
     state: app.getState(),
   });
 
@@ -98,11 +76,6 @@ function init() {
       download(videoURL, "video");
       recordedChunks = [];
     }
-  };
-
-  // monkey-patch normalized stroke width updates
-  ctx.strokeWidth = function (value) {
-    this.lineWidth = value / canvasScale;
   };
 
   if (settings.animated === true) {
@@ -140,6 +113,7 @@ window.onload = function () {
 
 window.onresize = function () {
   resetCanvas();
+  _render();
 };
 
 window.onkeydown = function (evt) {
