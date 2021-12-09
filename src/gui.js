@@ -1,7 +1,7 @@
 import * as dat from "dat.gui";
-import { Actions } from "./state";
+import { AppActions } from "./state";
 
-function init(app) {
+function createGUI(app) {
   const state = app.getState();
   const gui = new dat.GUI();
 
@@ -17,8 +17,8 @@ function init(app) {
   folder1.open();
 
   circRadius.onChange((val) => {
-    app.dispatch({ type: Actions.UpdateParam, payload: { radius: val } });
+    app.dispatch({ type: AppActions.UpdateParam, payload: { radius: val } });
   });
 }
 
-export { init };
+export { createGUI };

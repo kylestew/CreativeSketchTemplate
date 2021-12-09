@@ -5,7 +5,7 @@ const initState = {
   chickens: 3,
 };
 
-const Actions = {
+const AppActions = {
   UpdateParam: "UpdateParam",
 };
 
@@ -21,4 +21,4 @@ function createApp() {
   return createStore(appReducer);
 }
 
-export { Actions, createApp };
+export { AppActions, createApp };

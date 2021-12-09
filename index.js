@@ -1,13 +1,13 @@
 import Stats from "stats.js";
 
+import { settings } from "./src/settings";
 import { createApp } from "./src/state";
-import { init as initGUI } from "./src/gui";
-import { settings, update, render } from "./src/sketch";
+import { createGUI } from "./src/gui";
+import { render } from "./src/sketch";
 
 let app;
 let ctx;
 let stats;
-
 let videoStream, mediaRecorder, recordedChunks;
 
 function resetCanvas() {
@@ -27,14 +27,8 @@ function downloadCanvas() {
   download(dataURL, "image");
 }
 
-function _update(time) {
-  update({
-    time,
-    state: app.getState(),
-  });
-}
-
-function _render() {
+function _render(time) {
+  // clear frame
   ctx.fillStyle = settings.clearColor || "white";
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
@@ -45,7 +39,8 @@ function _render() {
   ctx.strokeStyle = "black";
 
   render({
-    ctx: ctx,
+    ctx,
+    time,
     width: ctx.canvas.width,
     height: ctx.canvas.height,
     state: app.getState(),
@@ -57,7 +52,7 @@ function _render() {
 function init() {
   app = createApp();
 
-  initGUI(app);
+  createGUI(app);
 
   var canvas = document.getElementById("canvas");
   ctx = canvas.getContext("2d");
@@ -87,8 +82,7 @@ function init() {
   function animationLoop(time) {
     if (stats) stats.begin();
 
-    _update(time);
-    _render();
+    _render(time);
 
     if (stats) stats.end();
 
@@ -98,12 +92,8 @@ function init() {
   if (settings.animated === true) {
     requestAnimationFrame(animationLoop);
   } else {
-    const postUpdate = () => {
-      _update();
-      _render();
-    };
-    app.subscribe(postUpdate);
-    postUpdate();
+    app.subscribe(_render);
+    _render();
   }
 }
 
