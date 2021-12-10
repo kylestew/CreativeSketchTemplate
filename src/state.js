@@ -1,8 +1,10 @@
 import { createStore } from "redux";
 
 const initState = {
-  radius: 0.25,
-  chickens: 3,
+  gridDensity: 4,
+  enableStroke: true,
+  lineWidth: 9.0,
+  lineColor: "#fff",
 };
 
 const AppActions = {
@@ -10,7 +12,6 @@ const AppActions = {
 };
 
 function appReducer(state = initState, action) {
-  // console.log("reducer:", state, action);
   switch (action.type) {
     default:
       return state;
