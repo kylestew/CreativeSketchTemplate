@@ -1,10 +1,20 @@
 import { ImageSampler } from "../snod/sampler";
 import { transformThatFits, insetRect, rgbToHex } from "../snod/util";
+import { polygon } from "@thi.ng/geom";
 import grids from "../snod/grids";
+import { subdiv } from "./lib/subdiv";
 
 let sampler = new ImageSampler("./assets/tex03.jpg");
 
-// const createBaseGeo = (size) => {
+// // TODO: TEMP: draw sampling
+// for (let y = 0; y < sampler.height; y += 24) {
+//   for (let x = 0; x < sampler.width; x += 24) {
+//     ctx.fillStyle = rgbToHex(sampler.colorAt([x, y]));
+//     ctx.strokeStyle = "white";
+//     ctx.lineWeight = 4;
+//     circle(ctx, [x, y], 24, true);
+//     // ctx.fillRect(x, y, 14, 14);
+//   }
 // }
 
 function render({ ctx, time, width, height, state }) {
@@ -14,19 +24,26 @@ function render({ ctx, time, width, height, state }) {
     insetRect([0, 0, width, height], 40) // cropped border
   );
   ctx.transform(...trans);
-
+  // new canvas size
   width = sampler.width;
   height = sampler.height;
 
-  let grid = grids.diamond(width, height, 12);
-  console.log(width, height, grid);
+  // setup base grid geometry
+  // let baseGeo = grids.diamond(width, height, 2);
+  let baseGeo = [
+    polygon([
+      [0, height],
+      [width / 2, 0],
+      [width, height],
+    ]),
+  ];
 
-  ctx.fillStyle = "#333333";
-  ctx.fillRect(0, 0, width, height);
-
-  ctx.fillStyle = "#FF00Ff";
+  // tessellate -> tint pipeline
+  let tessedPolys = subdiv(baseGeo);
+  console.log(tessedPolys);
 
   const renderPoly = (poly) => {
+    // console.log(poly);
     ctx.beginPath();
     const p0 = poly.points[0];
     ctx.moveTo(p0[0], p0[1]);
@@ -45,20 +62,7 @@ function render({ ctx, time, width, height, state }) {
   ctx.clip();
 
   // draw grid
-  grid.map(renderPoly);
-
-  // ctx.fillRect(0, 0, width, height);
-
-  // // TODO: TEMP: draw sampling
-  // for (let y = 0; y < sampler.height; y += 24) {
-  //   for (let x = 0; x < sampler.width; x += 24) {
-  //     ctx.fillStyle = rgbToHex(sampler.colorAt([x, y]));
-  //     ctx.strokeStyle = "white";
-  //     ctx.lineWeight = 4;
-  //     circle(ctx, [x, y], 24, true);
-  //     // ctx.fillRect(x, y, 14, 14);
-  //   }
-  // }
+  tessedPolys.map(renderPoly);
 }
 
 export { render };

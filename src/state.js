@@ -10,7 +10,7 @@ const AppActions = {
 };
 
 function appReducer(state = initState, action) {
-  console.log("reducer:", state, action);
+  // console.log("reducer:", state, action);
   switch (action.type) {
     default:
       return state;
