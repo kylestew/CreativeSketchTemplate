@@ -14,7 +14,7 @@ function createGUI(app) {
     .max(1)
     .step(0.01)
     .listen();
-  folder1.open();
+  // folder1.open();
 
   circRadius.onChange((val) => {
     app.dispatch({ type: AppActions.UpdateParam, payload: { radius: val } });
