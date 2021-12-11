@@ -1,37 +1,18 @@
 import Stats from "stats.js";
 
-import { settings, update, render } from "./sketch";
+import { settings } from "./src/settings";
+import { createApp } from "./src/state";
+import { createGUI } from "./src/gui";
+import { render } from "./src/sketch";
 
-let ctx, stats;
-let canvasScale, canvasXOff, canvasYOff;
-
-let videoStream, mediaRecorder;
-let recordedChunks;
+let app;
+let ctx;
+let stats;
+let videoStream, mediaRecorder, recordedChunks;
 
 function resetCanvas() {
   ctx.canvas.width = window.innerWidth;
   ctx.canvas.height = window.innerHeight;
-
-  // scale/translate canvas to [-1, 1] crop
-  if (ctx.canvas.width > ctx.canvas.height) {
-    // height is max side
-    canvasScale = ctx.canvas.height / 2;
-    canvasXOff = (ctx.canvas.width - ctx.canvas.height) / 2;
-    canvasYOff = 0;
-  } else {
-    canvasScale = ctx.canvas.width / 2;
-    canvasXOff = 0;
-    canvasYOff = (ctx.canvas.height - ctx.canvas.width) / 2;
-  }
-}
-
-function normalizeCanvas() {
-  ctx.translate(canvasXOff, canvasYOff);
-  ctx.scale(canvasScale, canvasScale);
-  ctx.translate(1, 1);
-  ctx.scale(1, -1);
-  ctx.strokeWidth(1.0);
-  ctx.lineJoin = "round";
 }
 
 function download(dataURL, name) {
@@ -46,7 +27,33 @@ function downloadCanvas() {
   download(dataURL, "image");
 }
 
+function _render(time) {
+  // clear frame
+  ctx.fillStyle = settings.clearColor || "white";
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+  ctx.save();
+
+  // defaults
+  ctx.fillStyle = "#F0F";
+  ctx.strokeStyle = "black";
+
+  render({
+    ctx,
+    time,
+    width: ctx.canvas.width,
+    height: ctx.canvas.height,
+    state: app.getState(),
+  });
+
+  ctx.restore();
+}
+
 function init() {
+  app = createApp();
+
+  createGUI(app);
+
   var canvas = document.getElementById("canvas");
   ctx = canvas.getContext("2d");
   resetCanvas();
@@ -66,41 +73,28 @@ function init() {
     }
   };
 
-  // monkey-patch normalized stroke width updates
-  ctx.strokeWidth = function (value) {
-    this.lineWidth = value / canvasScale;
-  };
-
   if (settings.animated === true) {
     stats = new Stats();
     stats.showPanel(0);
     document.body.appendChild(stats.dom);
   }
 
-  function mainLoop(time) {
+  function animationLoop(time) {
     if (stats) stats.begin();
 
-    update(time);
-
-    ctx.fillStyle = settings.clearColor || "white";
-    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-    ctx.save();
-
-    // defaults
-    ctx.fillStyle = "#F0F";
-    ctx.strokeStyle = "black";
-
-    normalizeCanvas();
-    render({ ctx: ctx, canvasScale: 1.0 / canvasScale });
-
-    ctx.restore();
+    _render(time);
 
     if (stats) stats.end();
 
-    if (settings.animated === true) requestAnimationFrame(mainLoop);
+    if (settings.animated === true) requestAnimationFrame(animationLoop);
   }
-  requestAnimationFrame(mainLoop);
+
+  if (settings.animated === true) {
+    requestAnimationFrame(animationLoop);
+  } else {
+    app.subscribe(_render);
+    _render();
+  }
 }
 
 window.onload = function () {
@@ -109,6 +103,7 @@ window.onload = function () {
 
 window.onresize = function () {
   resetCanvas();
+  _render();
 };
 
 window.onkeydown = function (evt) {
