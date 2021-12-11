@@ -4,7 +4,8 @@
   "description": "A (hopefully) quicker way to stand up a Javascript creative coding environment",
   "main": "index.js",
   "scripts": {
-    "start": "snowpack dev",
+    "start": "vite",
+    "build": "vite build",
     "clean": "rimraf build node_modules/.cache"
   },
   "repository": {
@@ -36,6 +37,6 @@
     "stats.js": "^0.17.0"
   },
   "devDependencies": {
-    "snowpack": "^3.8.8"
+    "vite": "^2.7.0"
   }
 }
