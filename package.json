@@ -6,7 +6,7 @@
   "scripts": {
     "start": "vite",
     "build": "vite build",
-    "clean": "rimraf build node_modules/.cache"
+    "clean": "rm -rf node_modules"
   },
   "repository": {
     "type": "git",
