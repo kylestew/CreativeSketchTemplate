@@ -1,72 +1,48 @@
-import { ImageSampler } from "../snod/sampler";
-import { transformThatFits, insetRect } from "../snod/util";
-import grids from "../snod/grids";
-import { subdiv } from "./lib/subdiv";
+import * as THREE from "three";
 
-let sampler = new ImageSampler("./assets/tex03.jpg");
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
-function render({ ctx, time, width, height, state }) {
-  // transform canvas to fit image
-  let trans = transformThatFits(
-    [sampler.width, sampler.height],
-    insetRect([0, 0, width, height], 40) // cropped border
-  );
-  ctx.transform(...trans);
-  // new canvas size
-  width = sampler.width;
-  height = sampler.height;
-
-  // setup base grid geometry
-  let baseGeo = grids.diamond(width, height, parseInt(state.gridDensity));
-
-  // tessellate -> tint pipeline
-  let tessedPolys = subdiv(baseGeo, sampler, {});
-  // console.log(tessedPolys);
-
-  const renderPoly = (poly) => {
-    // console.log(poly);
-    ctx.beginPath();
-    const p0 = poly.points[0];
-    ctx.moveTo(p0[0], p0[1]);
-    poly.points.slice(1).map((p) => {
-      ctx.lineTo(p[0], p[1]);
+class Sketch {
+  constructor() {
+    this.renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      preserveDrawingBuffer: true,
     });
-    ctx.lineTo(p0[0], p0[1]);
+    this.renderer.domElement.id = "render-canvas";
+    document.body.appendChild(this.renderer.domElement);
 
-    ctx.fillStyle = poly.attribs.fill;
-    ctx.fill();
+    this.camera = new THREE.PerspectiveCamera(55, 1, 0.01, 100);
+    this.camera.position.set(0, 0, 5);
 
-    if (state.enableStroke) {
-      ctx.strokeStyle = state.lineColor;
-      ctx.lineWidth = state.lineWidth;
-      ctx.stroke();
-    } else {
-      // stroke to fill in gaps in polys
-      ctx.strokeStyle = ctx.fillStyle;
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
-    }
-  };
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.minDistance = 0.5;
+    this.controls.maxDistance = 20;
+    this.controls.enabled = true;
 
-  // clip to picture extends (grids will overflow)
-  ctx.beginPath();
-  ctx.rect(0, 0, width, height);
-  ctx.clip();
+    this.scene = this._createScene(this.render);
+  }
 
-  // draw grid
-  tessedPolys.map(renderPoly);
+  resize({ width, height, dpr }) {
+    this.size = [width, height];
+    this.renderer.setPixelRatio = dpr;
+    this.renderer.setSize(width, height);
+    this.camera.aspect = width / innerHeight;
+    this.camera.updateProjectionMatrix();
+  }
 
-  // if stroke enabled, border canvas to clean up edges
-  if (state.enableStroke) {
-    ctx.strokeStyle = state.lineColor;
-    ctx.lineWidth = state.lineWidth;
-    ctx.beginPath();
-    // inset rect by half stroke width since strokes
-    // are drawn from center
-    let [x, y, w, h] = insetRect([0, 0, width, height], state.lineWidth / 2);
-    ctx.rect(x, y, w, h);
-    ctx.stroke();
+  _createScene(renderer) {
+    let scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xff00ff);
+    return scene;
+  }
+
+  _update(time, deltaTime) {}
+
+  render(time, deltaTime) {
+    this._update(time, deltaTime);
+    this.controls.update();
+    this.renderer.render(this.scene, this.camera);
   }
 }
 
-export { render };
+export default Sketch;

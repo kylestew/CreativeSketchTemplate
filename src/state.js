@@ -1,3 +1,7 @@
+/*
+TODO: re-enable state
+*/
+/*
 import { createStore } from "redux";
 
 const initState = {
@@ -23,3 +27,4 @@ function createApp() {
 }
 
 export { AppActions, createApp };
+*/

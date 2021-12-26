@@ -1,3 +1,7 @@
+/*
+TODO: re-enable GUI
+*/
+/*
 import * as dat from "dat.gui";
 import { AppActions } from "./state";
 
@@ -45,3 +49,4 @@ function createGUI(app) {
 }
 
 export { createGUI };
+*/
