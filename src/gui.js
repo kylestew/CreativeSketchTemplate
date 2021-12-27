@@ -8,10 +8,13 @@ function createGUI(state) {
 
   optionsFolder
     .addColor(state, "backgroundColor")
-    .name("Background Color")
+    .name("Background")
     .onChange(state.updateFn);
 
-  // optionsFolder.add(state, "cubeSize")
+  optionsFolder
+    .add(state, "cubeSize", 0.1, 3.0, 0.1)
+    .name("Cube Size")
+    .onChange(state.updateFn);
 }
 
 export default createGUI;

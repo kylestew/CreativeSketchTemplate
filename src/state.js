@@ -1,5 +1,6 @@
 const state = {
   backgroundColor: "#ff00ff",
+  cubeSize: 1.0,
 };
 
 /*
