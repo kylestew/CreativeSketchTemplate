@@ -1,30 +1,16 @@
-/*
-TODO: re-enable state
-*/
-/*
-import { createStore } from "redux";
-
-const initState = {
-  gridDensity: 4,
-  enableStroke: true,
-  lineWidth: 9.0,
-  lineColor: "#fff",
+const state = {
+  backgroundColor: "#ff00ff",
 };
 
-const AppActions = {
-  UpdateParam: "UpdateParam",
-};
+/*
+ * Pass an update function to be called when state changes
+ */
+function createState(updateFn) {
+  state.updateFn = updateFn;
 
-function appReducer(state = initState, action) {
-  switch (action.type) {
-    default:
-      return state;
-  }
+  // this is a good place for async loaders
+
+  return state;
 }
 
-function createApp() {
-  return createStore(appReducer);
-}
-
-export { AppActions, createApp };
-*/
+export default createState;

@@ -18,8 +18,6 @@ class Sketch {
     this.controls.minDistance = 0.5;
     this.controls.maxDistance = 20;
     this.controls.enabled = true;
-
-    this.scene = this._createScene(this.render);
   }
 
   resize({ width, height, dpr }) {
@@ -30,15 +28,15 @@ class Sketch {
     this.camera.updateProjectionMatrix();
   }
 
-  _createScene(renderer) {
+  updateState({ backgroundColor }) {
     let scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xff00ff);
-    return scene;
+    scene.background = new THREE.Color(backgroundColor);
+    this.scene = scene;
   }
 
   _update(time, deltaTime) {}
 
-  render(time, deltaTime) {
+  render(time, deltaTime, state) {
     this._update(time, deltaTime);
     this.controls.update();
     this.renderer.render(this.scene, this.camera);

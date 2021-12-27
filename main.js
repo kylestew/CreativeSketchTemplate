@@ -1,16 +1,24 @@
 import "./style.css";
 
-import Stats from "stats.js";
 import Sketch from "./src/sketch";
+import createState from "./src/state";
+import createGUI from "./src/gui";
+
+import Stats from "stats.js";
 
 let stats, prevTime;
-let sketch;
+let state, sketch;
 
 init();
 animate();
 
 function init() {
   sketch = new Sketch();
+
+  state = createState(updateState);
+  updateState(); // push initial state
+
+  createGUI(state);
 
   stats = new Stats();
   stats.showPanel(0);
@@ -20,6 +28,10 @@ function init() {
   onWindowResize(); // set initial size
 }
 
+function updateState() {
+  sketch.updateState(state);
+}
+
 function animate(time) {
   if (prevTime === undefined) prevTime = time;
   const deltaTime = Math.max(time - prevTime, 0);
@@ -27,7 +39,7 @@ function animate(time) {
 
   if (stats) stats.begin();
 
-  sketch.render(time / 1000.0, deltaTime / 1000.0);
+  sketch.render(time / 1000.0, deltaTime / 1000.0, state);
 
   if (stats) stats.end();
 
