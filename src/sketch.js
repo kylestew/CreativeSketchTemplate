@@ -6,7 +6,7 @@ class Sketch {
   constructor() {
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
-      preserveDrawingBuffer: true,
+      // preserveDrawingBuffer: true,
     });
     this.renderer.domElement.id = "render-canvas";
     document.body.appendChild(this.renderer.domElement);
@@ -44,14 +44,16 @@ class Sketch {
     this.scene = scene;
   }
 
-  _update(time, deltaTime) {
-    this.cube.rotation.x += 0.01;
-    this.cube.rotation.y += 0.01;
+  _update(time, deltaTime, {}) {
+    time /= 2.0;
+    this.cube.rotation.y = 1.0 * Math.PI * Math.sin(time);
+    this.cube.rotation.x = 1.0 * Math.PI * Math.cos(time);
+
+    this.controls.update();
   }
 
   render(time, deltaTime, state) {
-    this._update(time, deltaTime);
-    this.controls.update();
+    this._update(time, deltaTime, state);
     this.renderer.render(this.scene, this.camera);
   }
 }
