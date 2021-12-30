@@ -8,6 +8,8 @@ import Stats from "stats.js";
 
 let stats, prevTime;
 let state, sketch;
+let capture;
+let isCapturing = false;
 
 init();
 animate();
@@ -15,17 +17,19 @@ animate();
 function init() {
   sketch = new Sketch();
 
+  window.onresize = onWindowResize;
+  onWindowResize(); // set initial size
+
   state = createState(updateState);
   updateState(); // push initial state
 
   createGUI(state);
 
+  capture = new CCapture({ format: "png" });
+
   stats = new Stats();
   stats.showPanel(0);
   document.body.appendChild(stats.dom);
-
-  window.onresize = onWindowResize;
-  onWindowResize(); // set initial size
 }
 
 function updateState() {
@@ -33,6 +37,7 @@ function updateState() {
 }
 
 function animate(time) {
+  if (isNaN(time)) time = 0;
   if (prevTime === undefined) prevTime = time;
   const deltaTime = Math.max(time - prevTime, 0);
   prevTime = time;
@@ -40,6 +45,11 @@ function animate(time) {
   if (stats) stats.begin();
 
   sketch.render(time / 1000.0, deltaTime / 1000.0, state);
+
+  if (isCapturing) {
+    let canvas = document.getElementById("render-canvas");
+    capture.capture(canvas);
+  }
 
   if (stats) stats.end();
 
@@ -57,6 +67,17 @@ function onWindowResize() {
 window.onkeydown = function (evt) {
   if (evt.key == "s") {
     saveFrame();
+  } else if (evt.key == "r" && !evt.metaKey) {
+    if (!isCapturing) {
+      isCapturing = true;
+      capture.start();
+      console.log("recording...");
+    } else {
+      isCapturing = false;
+      capture.stop();
+      capture.save();
+      console.log("recording ended");
+    }
   }
 };
 
