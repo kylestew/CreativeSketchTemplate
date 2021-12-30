@@ -8,8 +8,8 @@ import Stats from "stats.js";
 
 let state, sketch;
 let stats, prevTime;
-let capture;
-let isCapturing = false;
+let capture,
+  isCapturing = false;
 let saveNextFrame = false;
 
 init();
@@ -24,7 +24,6 @@ function init() {
   state = createState(updateState);
   updateState(); // push initial state
 
-  console.log(isCapturing);
   createGUI(state);
 
   capture = new CCapture({ format: "png" });
