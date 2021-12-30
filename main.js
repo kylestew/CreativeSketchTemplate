@@ -6,10 +6,11 @@ import createGUI from "./src/gui";
 
 import Stats from "stats.js";
 
-let stats, prevTime;
 let state, sketch;
+let stats, prevTime;
 let capture;
 let isCapturing = false;
+let saveNextFrame = false;
 
 init();
 animate();
@@ -23,6 +24,7 @@ function init() {
   state = createState(updateState);
   updateState(); // push initial state
 
+  console.log(isCapturing);
   createGUI(state);
 
   capture = new CCapture({ format: "png" });
@@ -49,6 +51,9 @@ function animate(time) {
   if (isCapturing) {
     let canvas = document.getElementById("render-canvas");
     capture.capture(canvas);
+  } else if (saveNextFrame) {
+    saveFrame();
+    saveNextFrame = false;
   }
 
   if (stats) stats.end();
@@ -66,7 +71,7 @@ function onWindowResize() {
 
 window.onkeydown = function (evt) {
   if (evt.key == "s") {
-    saveFrame();
+    saveNextFrame = true;
   } else if (evt.key == "r" && !evt.metaKey) {
     if (!isCapturing) {
       isCapturing = true;
