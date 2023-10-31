@@ -6,6 +6,8 @@ class Sketch {
     constructor(initialState) {
         this.renderer = new THREE.WebGLRenderer({
             antialias: true,
+            preserveDrawingBuffer: true,
+            powerPreference: "high-performance",
         });
         this.renderer.domElement.id = "render-canvas";
         document.body.appendChild(this.renderer.domElement);
